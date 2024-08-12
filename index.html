@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>The Wellerman Group Chatbox</title>
+    <link rel="icon" type="image/x-icon"
+        href="https://cdn.jsdelivr.net/gh/The-Wellerman-Group/v3@latest/assets/apps/rounded-corners/chatbox.png" />
+    <link rel="stylesheet" href="./src/style-light.css">
+    <style>
+        .chat-list .chat-button {
+            position: relative;
+            /* Make sure the button is positioned relatively */
+        }
+
+        .chat-list .chat-button::after {
+            content: '';
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            /* Center vertically */
+            transform: translateY(-50%);
+            /* Adjust vertically */
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: #007bff;
+            /* Adjust the color as needed */
+            display: none;
+        }
+
+
+        .chat-list .chat-button.visible::after {
+            display: block;
+            /* or any other value you want */
+        }
+
+
+
+
+
+        .gameparrot-iframe {
+    width: 804px;
+    height: 604px;
+    border: black;
+}
+
+
+    </style>
+</head>
+
+<body>
+    <div class="wrapperfortheclick">
+        <div class="content">
+            <ul class="menu">
+                <li class="item" onclick="openAreYouSure()">
+                    <span>Remove Yourself</span>
+                </li>
+
+                <li class="item" onclick="openAddUserPopup()">
+                    <span>Add User(s) To Chat</span>
+                </li>
+
+                <li class="item" onclick="openRenameChat()">
+                    <span>Rename Chat</span>
+                </li>
+
+                <li class="item" onclick="openSeeUser()">
+                    <span>See User(s) in Chat</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="chat-sidebar">
+        <div class="chat-sidebar-content">
+            <button class="chat-button" onclick="openCreateChat()">New Chat</button>
+            <div class="chat-list">
+
+            </div>
+        </div>
+    </div>
+    <div id="popupContainer" class="popup-overlay">
+        <div class="popup">
+            <div class="popup-header">
+                <input class="name-chat" placeholder="Chat Name" maxlength="40" id="enterChatName"
+                    oninput="updateNameChatCharacterCount()"></input>
+                <span id="nameChatCharCount">0/40</span>
+                <div class="outer" onclick="closeCreateChat()">
+                    <div class="inner" onclick="closeCreateChat()">
+                        <label>Close</label>
+                    </div>
+                </div>
+
+            </div>
+            <input type="text" class="search-bar" oninput="filterUserList(this.value)"
+                placeholder="Search for users here. You will always be added to the chats you create.">
+            <div id="userList" class="user-list">
+                <!-- Add more users here -->
+            </div>
+            <div class="message-input-container">
+                <!--<input type="text" class="message-input" placeholder="Type your message...">-->
+
+                <div class="input-wrapper">
+                    <textarea id="newChatMessageInput" rows="1"
+                        characterlimittextid="char-limit-create-chat-send-message" placeholder="Type your message here."
+                        oninput="autoExpand(this)" onkeydown="handleKeyPressForCreateChat(event)"
+                        maxlength="1000"></textarea>
+                    <div id="char-limit-create-chat-send-message">0/1000</div>
+                </div>
+                <button onclick="createChat()">Send</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="chat-container">
+
+
+        <div id="chat-messages"></div>
+
+        <div id="input-container">
+            <div class="input-wrapper">
+                <textarea id="myTextarea" rows="1" characterlimittextid="char-limit-send-message"
+                    placeholder="Type your message here." oninput="autoExpand(this)" onkeydown="handleKeyPress(event);"
+                    maxlength="1000"></textarea>
+                <div id="char-limit-send-message">0/1000</div>
+            </div>
+            <button onclick="sendMessage()">Send</button>
+        </div>
+
+
+    </div>
+
+    <div class="sidebar">
+        <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSidebar()">
+            <div class="hamburger-bar hamburger-bar1"></div>
+            <div class="hamburger-bar hamburger-bar2"></div>
+            <div class="hamburger-bar hamburger-bar3"></div>
+        </button>
+
+        <div class="sidebar-content" id="sidebarContent">
+            <!-- Sidebar content here -->
+            <h2 class="sidebar-header">Settings</h2>
+
+            <!-- General Settings Category -->
+            <div class="category">
+                <h4>General Display:</h4>
+                <div class="dropdown-menu">
+                    <label class="dropdown-label" for="themeSelect">Select Theme:</label>
+                    <select class="dropdown-select" id="themeSelect">
+                        <option value="auto">Auto</option>
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                    </select>
+                </div>
+                <div class="dropdown-menu">
+                    <label class="dropdown-label" for="sendKeySelect">Send Key:</label>
+                    <select class="dropdown-select" id="sendKeySelect">
+                        <option value="Enter">Enter</option>
+                        <option value="Control+Enter">Ctrl+Enter</< /option>
+                        <option value="Alt+Enter">Alt+Enter</option>
+                        <option value="Tab+Enter">Tab+Enter</option>
+                    </select>
+                </div>
+                <div class="dropdown-menu">
+                    <label class="dropdown-label" for="timeStampSelect">Show Time Stamp:</label>
+                    <select class="dropdown-select" id="timeStampSelect">
+                        <option value="show">Show</option>
+                        <option value="hide">Hide</option>
+                    </select>
+                </div>
+                <div class="slider-container">
+                    <label class="slider-label" for="fontSizeSlider">Font Size:</label>
+                    <div class="slider-wrapper">
+                        <input class="slider-track" type="range" id="fontSizeSlider" min="10" max="40" step="1"
+                            value="16">
+                        <span class="slider-value" id="fontSizeSlider-value">16px</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Settings Category -->
+            <div class="category">
+                <h4>Account:</h4>
+                <div class="input-with-button">
+                    <label for="userIdInput">Change User ID:</label>
+                    <div class="input-button-container">
+                        <input type="text" class="input-text" id="userIdInput" name="userIdInput" placeholder="User ID"
+                            autocomplete="off">
+                        <button onclick="openChangeUserIdPopup()">Submit</button>
+                    </div>
+                </div>
+                <div class="input-with-button">
+                    <label for="passwordInput">Change Password:</label>
+                    <div class="input-button-container">
+                        <input type="text" class="input-text" id="passwordInput" name="passwordInput"
+                            placeholder="Password" autocomplete="off">
+                        <button onclick="openPassword()">Submit</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reset Settings Category -->
+            <div class="category">
+                <h4>General:</h4>
+                <button onclick="resetSettings()">Reset to Default</button><br><br>
+                <button onclick="logOut()">Log Out</button>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+    <div id="addUserPopupContainer" class="popup-overlay">
+        <div class="popup">
+            <div class="popup-header">
+                <p>Add Users to Chat</p>
+                <div class="outer" onclick="closeAddUser()">
+                    <div class="inner" onclick="closeAddUser()">
+                        <label>Close</label>
+                    </div>
+                </div>
+
+            </div>
+            <input type="text" class="add-user-search-bar" oninput="filterAddUserList(this.value)"
+                placeholder="Search for users here.">
+            <div id="addUserList" class="add-user-list">
+                <!-- Add more users here-->
+            </div>
+            <div class="message-input-container">
+                <button onclick="addUser()">Add User</button>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div id="areYouSurePopupContainer" class="popup-overlay">
+        <div class="areYouSurePopup">
+            <div class="popup-header">
+                <h1>Are You Sure?</h1>
+                <div class="outer" onclick="closeAreYouSure()">
+                    <div class="inner" onclick="closeAreYouSure()">
+                        <label>Close</label>
+                    </div>
+                </div>
+            </div>
+            <p>This action cannot be undone.</p>
+            <br>
+            <div class="message-input-container">
+
+                <button onclick="removeUser()">Yes</button>
+                &nbsp;
+                <button onclick="closeAreYouSure()">No</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="passwordPopupContainer" class="popup-overlay">
+        <div class="areYouSurePopup">
+            <div class="popup-header">
+                <h1>Are You Sure?</h1>
+                <div class="outer" onclick="closePassword()">
+                    <div class="inner" onclick="closePassword()">
+                        <label>Close</label>
+                    </div>
+                </div>
+            </div>
+            <p>This action cannot be undone.</p>
+            <br>
+            <div class="message-input-container">
+
+                <button onclick="changePassword()">Yes</button>
+                &nbsp;
+                <button onclick="closePassword()">No</button>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div id="userIdPopupContainer" class="popup-overlay">
+        <div class="areYouSurePopup">
+            <div class="popup-header">
+                <h1>Are You Sure?</h1>
+                <div class="outer" onclick="closeChangeUserIdPopup()">
+                    <div class="inner" onclick="closeChangeUserIdPopup()">
+                        <label>Close</label>
+                    </div>
+                </div>
+            </div>
+            <p>This action cannot be undone.</p>
+            <br>
+            <div class="message-input-container">
+
+                <button onclick="changeUserId()">Yes</button>
+                &nbsp;
+                <button onclick="closeChangeUserIdPopup()">No</button>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div id="renameContainer" class="popup-overlay">
+        <div class="popup short-popup">
+            <div class="popup-header">
+                <p>Rename Chat</p>
+                <div class="outer" onclick="closeRenameChat()">
+                    <div class="inner" onclick="closeRenameChat()">
+                        <label>Close</label>
+                    </div>
+                </div>
+
+            </div>
+            <input class="name-chat" placeholder="Chat Name" maxlength="40" id="renameChatName"
+                oninput="updateRenameChatCharacterCount()"></input>
+            <span id="renameChatCharCount">0/40</span>
+            <br><br>
+            <button onclick="renameChat()">Rename Chat</button>
+        </div>
+    </div>
+    </div>
+
+    <div id="seeUserPopupContainer" class="popup-overlay">
+        <div class="popup">
+            <div class="popup-header">
+                <p>Users in Chat</p>
+                <div class="outer" onclick="closeSeeUser()">
+                    <div class="inner" onclick="closeSeeUser()">
+                        <label>Close</label>
+                    </div>
+                </div>
+
+            </div>
+            <div id="seeUserList" class="see-user-list">
+                <!-- Add more users here-->
+            </div>
+        </div>
+    </div>
+
+    
+
+    <div id="gameParrotContainer" class="popup-overlay">
+        <div class="popup gameparrot-popup">
+            <div class="popup-header">
+                <p>Users in Chat</p> 
+                <div class="outer" onclick="closeGameParrot()">
+                    <div class="inner" onclick="closeGameParrot()">
+                        <label>Close</label>
+                    </div>
+                </div>
+    
+            </div>
+            <iframe src="./gameparrot/index.html" id="gameParrot" class="gameparrot-iframe"></iframe>
+            <button id="joinGameParrot" onclick="joinGameParrot(this.getAttribute('data-gameid'), this.getAttribute('data-game'))" data-gameid="" data-game="">Join</button>
+        </div>
+    </div>
+
+    <div id="startUpContainer" class="popup-overlay">
+        <div class="startUpPopup">
+            <div class="popup-header">
+                <h1>Features:</h1>
+                <div class="outer" onclick="closeStartUp()">
+                    <div class="inner" onclick="closeStartUp()">
+                        <label>Close</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="startUpPopupContent">
+                <h3>Chats:</h3>
+                <ul>
+                    <li>To create a new chat click "New Chat" and fill out the chat name, selecting the user(s), and the
+                        message to send to everyone.</li>
+                    <li>You can remove yourself from a chat by right clicking on the chat and pressing "Remove
+                        Yourself".</li>
+                    <li>You can add user(s) to chats by right clicking on the chat and pressing "Add User(s) to Chat"
+                        and selecting the new user(s).</li>
+                    <li>You can rename chats by right clicking on the chat and pressing "Rename Chat" and filling out
+                        the new name.</li>
+                    <li>You can see user(s) by right clicking on the chat and pressing "See User(s) in chat".</li>
+                </ul>
+                <h3>Settings:</h3>
+                <ul>
+                    <li>To open the settings side bar you need to click on the hambergur menu on the top right corner of
+                        the chatbox.</li>
+                    <li>You can change the theme of the chatbox, the key to send messages, if the time stamps display,
+                        and the font size in the "General" section of the setings sidebar.</li>
+                    <li>You can change your password and your user ID in the "Account" section of the settings side bar.
+                    </li>
+                    <li>You can reset your settings to default by clicking "Reset to Default".</li>
+                </ul>
+                <h3>Sending Messages:</h3>
+                <ul>
+                    <li>Type your message to the input box and send it by clicking Enter or your set send key or
+                        clicking send.</li>
+                    <li>Images can be sent like this: image(https://example.com/image.png).</li>
+                    <li>You can specify the width like this: image(https://example.com/image.png,0.37) just replace 0.37
+                        with the percentage you want.</li>
+                    <li>Links are created like this: link(https://example.com). If you want it to display something
+                        other than the actual link you specify it like this: link(https://example.com,text).</li>
+                    <li><b>Bold</b> text looks like this: bold(text).</li>
+                    <li><big><big><big><big>Big</big></big></big></big> text looks like: big(text).</li>
+                    <li><i>Italic</i> text is this: italic(text).</li>
+                    <li>Text that is <s>slashed</s> through is defined like this: slash(text).</li>
+                </ul>
+            </div>
+        </div>
+
+
+
+
+
+
+
+        <script src="./src/script.js"></script>
+</body>
+
+</html>

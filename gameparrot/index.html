@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameParrot</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
+    <style>
+        body { margin: 0; }
+    </style>
+</head>
+
+<body>
+    <script>
+        let params = new URLSearchParams(window.location.search)
+        let url = new URL(window.location.href);
+        let gameId = params.get("game_id")
+        let gameName = params.get("game")
+        let userId = params.get("user_id")
+        let chatId = params.get("chat_id")
+        let password = params.get("password")
+        let isJoining = params.get("join") === "true"
+        let access = params.get("access") === "true"
+
+        const backendUrl = "http://127.0.0.1:5000/api/chatbox";
+
+        if (isJoining) {
+            message = "GameParrot(join, " + gameId + ", " + userId + ")"
+            fetch(backendUrl + "/sendMessage", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: userId,
+                    password: password,
+                    chat_id: chatId,
+                    message: message
+                }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.SUCCESS) {
+                        showError(data.error)
+                    } else {
+                        params.set("join", "false")
+                        url.search = params.toString();
+                        history.pushState({}, '', url);
+                        window.location.reload();
+                    }
+                });
+        } else if (!access) {
+            console.log("No Access")
+        } else {
+            console.log("play game")
+
+            message = "GameParrot(information, " + gameId + ", " + userId + ")"
+
+            fetch(backendUrl + "/sendMessage", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: userId,
+                    password: password,
+                    chat_id: chatId,
+                    message: message
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data)
+                if (!data.SUCCESS) {
+                    showError(data.error)
+                } else {
+                    gameName = data.info.game
+                    var script = document.createElement('script');
+                    script.src =  `./${gameName}/main.js?game_id=${gameId}&user_id=${userId}&password=${password}&chat_id=${chatId}`;
+                    document.head.appendChild(script);
+
+                }
+            });
+        }
+
+        function showError(errorMessage) {
+            var errorMessageDiv = document.getElementById('errorMessage');
+
+            // If error message container already exists, update its content
+            if (errorMessageDiv) {
+                var errorContent = errorMessageDiv.querySelector('span');
+                errorContent.innerHTML = `<strong>Error:</strong> <span>${errorMessage}</span>`;
+                return; // Exit function to avoid creating a new container
+            }
+
+            // Create error message container div
+            errorMessageDiv = document.createElement('div');
+            errorMessageDiv.id = 'errorMessage';
+            document.body.appendChild(errorMessageDiv);
+
+            errorMessageDiv.style.position = 'absolute';
+            errorMessageDiv.style.zIndex = '999999';
+
+            errorMessageDiv.style.top = '10%';
+            errorMessageDiv.style.left = '50%';
+            errorMessageDiv.style.transform = 'translateX(-50%)';
+            errorMessageDiv.style.backgroundColor = '#f44336';
+            errorMessageDiv.style.color = 'white';
+            errorMessageDiv.style.padding = '20px';
+            errorMessageDiv.style.borderRadius = '5px';
+            errorMessageDiv.style.display = 'none';
+
+            // Create close button span
+            var closeButton = document.createElement('span');
+            closeButton.innerHTML = '&times;';
+            closeButton.style.color = 'white';
+            closeButton.style.float = 'right';
+            closeButton.style.fontSize = '20px';
+            closeButton.style.fontWeight = 'bold';
+            closeButton.style.cursor = 'pointer';
+            closeButton.style.marginLeft = '10px'; // Add margin between close button and error content
+            closeButton.onclick = function () {
+                document.body.removeChild(errorMessageDiv);
+            };
+
+            // Create error message content
+            var errorContent = document.createElement('span');
+            errorContent.innerHTML = `<strong>Error:</strong> <span>${errorMessage}</span>`;
+
+            // Append elements to error message container
+            errorMessageDiv.appendChild(errorContent);
+            errorMessageDiv.appendChild(closeButton);
+
+            // Display error message
+            errorMessageDiv.style.display = 'block';
+        }
+    </script>
+
+</body>
+
+</html>

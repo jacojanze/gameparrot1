@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Wellerman Group Chatbox Login</title>
+  <link rel="icon" type="image/x-icon" href="https://cdn.jsdelivr.net/gh/The-Wellerman-Group/v3@latest/assets/apps/rounded-corners/chatbox.png" />
+  <style>
+    body,
+    html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      /* Or your chosen font */
+      background-color: #333;
+      /* Dark background color */
+      color: #eee;
+      /* Light text color */
+    }
+
+    .login-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      /* Full viewport height */
+    }
+
+    .login-form {
+        text-align: center;
+      background-color: #444;
+      padding: 40px;
+      /* Increased padding */
+      border-radius: 20px;
+      /* Increased border radius */
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+      /* Increased box shadow */
+      width: 400px;
+      /* Increased width */
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: calc(100% - 20px);
+      /* Adjusted width to account for padding */
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      /* Increased margin */
+      background-color: #555;
+      color: #eee;
+      box-sizing: border-box;
+      /* Including padding in width calculation */
+      -webkit-autofill: off;
+    }
+
+    input[type="submit"] {
+      width: calc(100% - 20px);
+      /* Adjusted width to account for padding */
+      padding: 15px;
+      /* Increased padding */
+      cursor: pointer;
+      background-color: #3498db;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      /* Increased margin */
+    }
+
+    input[type="submit"]:hover {
+      background-color: #2980b9;
+    }
+
+    .error-message {
+      position: absolute;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #f44336;
+      color: white;
+      padding: 20px;
+      border-radius: 5px;
+      display: none;
+    }
+
+    .error-message .closebtn {
+      color: white;
+      float: right;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="error-message" id="errorMessage">
+    <span class="closebtn" onclick="closeErrorMessage()">&times;</span>
+    <strong>Error!</strong> <span id="changeMePlease"></span>
+  </div>
+  <div class="login-container">
+    <form class="login-form" action="#" method="POST" autocomplete="off">
+      <h1 >LOGIN</h1>
+      <input type="text" name="user" placeholder="Username or User ID" required>
+      <input type="password" name="password" placeholder="Password" required onkeydown="checkEnter(event)">
+      <input type="submit" value="Login">
+	  <b style="font-size: 14px; cursor: pointer;">Email an editor of The Wellerman Group to Sign Up today!</b>
+	  <a style="font-size: 14px; cursor: pointer; color: #007bff;" target="_blank" href="https://forms.gle/h1TyYHqZu2kpimSu5">Click Here to Sign Up</a>
+	  
+    </form>
+  </div>
+
+  <script>
+
+    const backendUrl = "http://127.0.0.1:5000"
+    function checkEnter(event) {
+      if (event.key === 'Enter') {
+        event.preventDefault(); // Prevent form submission
+        submitForm();
+      }
+    }
+
+    document.querySelector('.login-form').addEventListener('submit', function (event) {
+      event.preventDefault(); // Prevent the default form submission
+      submitForm();
+    });
+
+    function submitForm() {
+      const formData = new FormData(document.querySelector('.login-form'));
+      
+
+      fetch(backendUrl + '/api/chatbox/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ user: formData.get('user'), password: formData.get('password') })
+      })
+        .then(response => response.json())
+        .then(data => {
+      if (data.SUCCESS) {
+        localStorage.setItem("user_id", data.user_id);
+        localStorage.setItem("username", data.username)
+        localStorage.setItem("password", formData.get('password'))
+        window.location.href = "../index.html";
+      } else {
+        displayError(data.error);
+      }
+    })
+        .catch(error => alert('Error:', error));
+    }
+    function displayError(errorMessage){
+      document.getElementById('changeMePlease').innerHTML = errorMessage;
+      document.getElementById('errorMessage').style.display = 'block';
+    }
+    function closeErrorMessage() {
+      document.getElementById('errorMessage').style.display = 'none';
+    }
+
+</script>
+</body>
+
+</html>
